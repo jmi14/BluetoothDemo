@@ -23,11 +23,13 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btnBluetoothOn, btnBluetoothOff, btnFindPairedDevices,btnFindNearbyDevices;
+    private Button btnBluetoothOn, btnBluetoothOff, btnFindPairedDevices, btnFindNearbyDevices;
     private int bluetoothConstant = 715;
     private BluetoothAdapter bluetoothAdapter;
     private Set<BluetoothDevice> nearbyDevices;
     private ListView listViewDevices;
+    private ArrayList arrayList = new ArrayList();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         btnBluetoothOn = (Button) findViewById(R.id.btnBtOn);
         btnBluetoothOff = (Button) findViewById(R.id.btnOff);
         btnFindPairedDevices = (Button) findViewById(R.id.btnPairedDevices);
-        btnFindNearbyDevices  = (Button)findViewById(R.id.btnFindDevices);
+        btnFindNearbyDevices = (Button) findViewById(R.id.btnFindDevices);
         listViewDevices = (ListView) findViewById(R.id.listViewDevices);
 
     }
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                findNearbyBluetoothDevices();
+                scanNearbyBluetoothDevices();
             }
         });
         btnFindPairedDevices.setOnClickListener(new View.OnClickListener() {
@@ -147,17 +149,29 @@ public class MainActivity extends AppCompatActivity {
         listViewDevices.setAdapter(arrayAdapter);
     }
 
-    public void findNearbyBluetoothDevices(){
+    public void scanNearbyBluetoothDevices() {
 
         IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-//        this.registerReceiver(broadcastReceiver);
-
+        this.registerReceiver(broadcastReceiver, intentFilter);
+        bluetoothAdapter.startDiscovery();
     }
 
-   public final  BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    public final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+
+                BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                arrayList.add(bluetoothDevice.getName());
+
+            }
+            ArrayAdapter arrayAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, arrayList);
+            listViewDevices.setAdapter(arrayAdapter);
         }
+
+
     };
 }
